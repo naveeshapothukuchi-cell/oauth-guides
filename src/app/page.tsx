@@ -232,34 +232,31 @@ export default function Home() {
         </div>
 
         <div className="text-sm text-zinc-500 border-t border-zinc-800 pt-4 space-y-1">
-          <div className="font-medium text-zinc-400">Sources</div>
-          {audience === 'just_me' && (
-            <div>
-              <a href="https://docs.slack.dev/authentication/installing-with-oauth/" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">
-                Installing with OAuth
-              </a>
-              {' '}(tested path)
-            </div>
-          )}
-          {audience === 'team' && (
-            <div>
-              <a href="https://docs.slack.dev/authentication/installing-with-oauth/" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">
-                Installing with OAuth
-              </a>
-              {' '}(team path: distribution and admin approval)
-            </div>
-          )}
+          <div className="font-medium text-zinc-400 mb-2">Sources</div>
+          <div>
+            <a href="https://docs.slack.dev/authentication/installing-with-oauth/" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">
+              Installing with OAuth
+            </a>
+          </div>
+          <div>
+            <a href="https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">
+              Slack Marketplace review guide
+            </a>
+          </div>
+          <div>
+            <a href="https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements/" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">
+              App guidelines and requirements
+            </a>
+          </div>
+          <div>
+            <a href="https://api.slack.com/apps" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">
+              App settings (create and submit)
+            </a>
+          </div>
           {audience === 'public' && (
-            <>
-              <div>
-                <a href="https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">
-                  Slack Marketplace review guide
-                </a>
-              </div>
-              <div className="text-xs text-zinc-500 mt-1">
-                Official requirements: App fully functional and publicly available. Tested on a non-dev workspace (including uninstall). Installed on 10+ active workspaces. Preliminary review up to 10 business days. Functional review up to 10 weeks.
-              </div>
-            </>
+            <div className="text-xs text-zinc-500 mt-2">
+              Official requirements: App fully functional and publicly available. Tested on a non-dev workspace (including uninstall). Installed on 10+ active workspaces. Preliminary review up to 10 business days. Functional review up to 10 weeks.
+            </div>
           )}
         </div>
       </section>
