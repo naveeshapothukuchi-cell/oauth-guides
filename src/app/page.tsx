@@ -3,10 +3,14 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) {
+    throw new Error('Missing Supabase environment variables')
+  }
+  return createClient(url, key)
+}
 
 type Audience = 'just_me' | 'team' | 'public'
 
@@ -14,17 +18,26 @@ export default function Home() {
   const [guides, setGuides] = useState<any[]>([])
   const [audience, setAudience] = useState<Audience>('just_me')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    supabase
-      .from('guides')
-      .select('app_name, slug, status, content')
-      .then(({ data }) => {
-        setGuides(data || [])
-        setLoading(false)
-      })
+    try {
+      const supabase = getSupabase()
+      supabase
+        .from('guides')
+        .select('app_name, slug, status, content')
+        .then(({ data, error }) => {
+          if (error) setError(error.message)
+          else setGuides(data || [])
+          setLoading(false)
+        })
+    } catch (e: any) {
+      setError(e.message)
+      setLoading(false)
+    }
   }, [])
 
+  if (error) return <div className="p-8 text-red-600">Error: {error}</div>
   if (loading) return <div className="p-8">Loading...</div>
 
   return (
@@ -74,7 +87,6 @@ export default function Home() {
           <div key={guide.slug} className="mb-12">
             <h2 className="text-2xl font-semibold mb-4">{guide.app_name}</h2>
 
-            {/* Header */}
             <div className="bg-gray-50 border rounded p-4 mb-6 grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
               <div><strong>Status</strong><br />{guide.status}</div>
               <div><strong>Difficulty</strong><br />{summary?.difficulty || '—'}</div>
@@ -83,7 +95,6 @@ export default function Home() {
               <div><strong>Review needed</strong><br />{summary?.review || '—'}</div>
             </div>
 
-            {/* Data every developer needs */}
             <h3 className="text-lg font-medium mb-2">Data every developer needs</h3>
             <div className="overflow-x-auto mb-8">
               <table className="w-full border text-sm">
@@ -113,7 +124,6 @@ export default function Home() {
               </table>
             </div>
 
-            {/* Steps */}
             <h3 className="text-lg font-medium mb-2">
               Steps {audience === 'just_me' ? '(tested path)' : '(from docs)'}
             </h3>
@@ -123,7 +133,6 @@ export default function Home() {
               ))}
             </ol>
 
-            {/* Evidence — only for Just me when tested data exists */}
             {c.tested && audience === 'just_me' && (
               <div className="bg-green-50 border border-green-200 rounded p-4 mb-6 text-sm">
                 <strong>Tested:</strong> {c.tested.date} by {c.tested.who}<br />
@@ -131,7 +140,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* Blockers */}
             <h3 className="text-lg font-medium mb-2">Blockers for this audience</h3>
             <div className="overflow-x-auto mb-8">
               <table className="w-full border text-sm">
@@ -158,7 +166,6 @@ export default function Home() {
               </table>
             </div>
 
-            {/* Agent vs Human — by setup level */}
             <h3 className="text-lg font-medium mb-2">Agent vs Human</h3>
             <div className="overflow-x-auto mb-6">
               <table className="w-full border text-sm">
@@ -172,60 +179,41 @@ export default function Home() {
                 <tbody>
                   <tr>
                     <td className="border p-2 font-medium">App provisioning</td>
-                    <td className="border p-2 bg-blue-50">
-                      Parse required scopes. Prefill redirect schemas. Construct authorization URLs.
-                    </td>
-                    <td className="border p-2 bg-amber-50">
-                      Log in to Slack Developer Console. Create the app. Copy Client ID and Client Secret. Enter and save Redirect URLs.
-                    </td>
+                    <td className="border p-2 bg-blue-50">Parse required scopes. Prefill redirect schemas. Construct authorization URLs.</td>
+                    <td className="border p-2 bg-amber-50">Log in to Slack Developer Console. Create the app. Copy Client ID and Client Secret. Enter and save Redirect URLs.</td>
                   </tr>
                   <tr>
                     <td className="border p-2 font-medium">Single workspace<br />(Just me)</td>
-                    <td className="border p-2 bg-blue-50">
-                      Generate token exchange requests. Make API calls with the bot token.
-                    </td>
-                    <td className="border p-2 bg-amber-50">
-                      Click Install to Workspace. Approve the consent screen.
-                    </td>
+                    <td className="border p-2 bg-blue-50">Generate token exchange requests. Make API calls with the bot token.</td>
+                    <td className="border p-2 bg-amber-50">Click Install to Workspace. Approve the consent screen.</td>
                   </tr>
                   <tr>
                     <td className="border p-2 font-medium">Multi-workspace<br />(Team / Public)</td>
-                    <td className="border p-2 bg-blue-50">
-                      Implement callback route handlers. Enforce state token validation. Store tokens by team_id.
-                    </td>
-                    <td className="border p-2 bg-amber-50">
-                      Turn on distribution. Provision HTTPS for callbacks. Submit for Marketplace review (public).
-                    </td>
+                    <td className="border p-2 bg-blue-50">Implement callback route handlers. Enforce state token validation. Store tokens by team_id.</td>
+                    <td className="border p-2 bg-amber-50">Turn on distribution. Provision HTTPS for callbacks. Submit for Marketplace review (public).</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
-            {/* Audience-specific sources */}
             <div className="text-sm text-gray-600 border-t pt-4 space-y-1">
               <div><strong>Sources:</strong></div>
               {audience === 'just_me' && (
                 <div>
-                  <a href="https://docs.slack.dev/authentication/installing-with-oauth/" target="_blank" rel="noreferrer" className="text-blue-600 underline">
-                    Installing with OAuth
-                  </a>
+                  <a href="https://docs.slack.dev/authentication/installing-with-oauth/" target="_blank" rel="noreferrer" className="text-blue-600 underline">Installing with OAuth</a>
                   {' '}(tested path)
                 </div>
               )}
               {audience === 'team' && (
                 <div>
-                  <a href="https://docs.slack.dev/authentication/installing-with-oauth/" target="_blank" rel="noreferrer" className="text-blue-600 underline">
-                    Installing with OAuth
-                  </a>
+                  <a href="https://docs.slack.dev/authentication/installing-with-oauth/" target="_blank" rel="noreferrer" className="text-blue-600 underline">Installing with OAuth</a>
                   {' '}(team path: distribution and admin approval)
                 </div>
               )}
               {audience === 'public' && (
                 <>
                   <div>
-                    <a href="https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/" target="_blank" rel="noreferrer" className="text-blue-600 underline">
-                      Slack Marketplace review guide
-                    </a>
+                    <a href="https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/" target="_blank" rel="noreferrer" className="text-blue-600 underline">Slack Marketplace review guide</a>
                   </div>
                   <div className="mt-2 text-xs">
                     <strong>Official requirements:</strong> App fully functional and publicly available. Tested on a non-dev workspace (including uninstall). Installed on 10+ active workspaces. Preliminary review up to 10 business days. Functional review up to 10 weeks. Submit from app settings. Provide test accounts and a video demo.
